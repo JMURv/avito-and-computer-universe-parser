@@ -1,3 +1,4 @@
+import os
 from time import sleep
 from loguru import logger
 from bs4 import BeautifulSoup
@@ -5,9 +6,11 @@ import re
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
-
 BASE_URL = 'https://www.avito.ru'
 MAX_DESCRIPTION_WORDS_LENGTH = 40
+
+PROXIES = os.getenv("PROXIES").split(";")
+CURR_PROXY = 0
 
 
 def parse_info(page: str) -> dict[str, str]:
@@ -73,19 +76,36 @@ def parse_info(page: str) -> dict[str, str]:
     return info
 
 
+def get_proxy_server_url():
+    global CURR_PROXY
+    if CURR_PROXY >= len(PROXIES):
+        CURR_PROXY = 0
+    res = PROXIES[CURR_PROXY]
+    CURR_PROXY += 1
+    return res
+
+
 def sync_avito(url: str):
     logger.debug(f"Start parsing for: {url}")
     options = Options()
     options.add_argument('--headless')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
-    
+    options.add_argument(f'--proxy-server={get_proxy_server_url()}')
+
     driver = webdriver.Chrome(options=options)
     try:
         driver.get(url)
+
         sleep(5)
         page_source = driver.page_source
-        logger.success(driver.title)
+
+        tab_title = driver.title
+        if "IP" in tab_title:
+            logger.error(tab_title)
+        else:
+            logger.success(f"PARSED: {tab_title}")
+
         driver.close()
         driver.quit()
         return parse_info(page_source)

@@ -1,3 +1,5 @@
+import time
+
 from loguru import logger
 import asyncio
 from parsing.parser import sync_avito
@@ -48,7 +50,7 @@ async def start_tracking():
     """
     Функция забирает активные задачи для каждого пользователя
     и формирует из них Future объект для ПОСЛЕДОВАТЕЛЬНОГО выполнения
-    Это обусловлено возможностью получить бан по IP на авито или капчу
+    Это обусловлено возможностью получить бан по IP на авито
     """
     db = DBCommands()
     while True:
@@ -84,4 +86,4 @@ async def start_tracking():
                             adv_desc=adv_desc,
                             adv_image=adv_image,
                         )
-                    await asyncio.sleep(10)
+                time.sleep(20)

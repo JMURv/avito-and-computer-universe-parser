@@ -41,4 +41,4 @@ async def send_welcome(message: types.Message):
 
 async def bot_start():
     await dp.skip_updates()
-    await dp.start_polling(bot, timeout=60)
+    await dp.start_polling(bot)
